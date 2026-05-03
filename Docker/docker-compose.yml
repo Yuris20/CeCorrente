@@ -1,0 +1,57 @@
+version: '3.8'
+
+services:
+  # ---- Database MySQL ----
+  db:
+    image: mysql:8.0
+    container_name: cecorrente_db
+    restart: always
+    # Disabilita le restrizioni SQL per permettere le tue query GROUP BY
+    command: --sql-mode="STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION"
+    environment:
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+      MYSQL_DATABASE: ${DB_NAME}
+      MYSQL_USER: ${DB_USER}
+      MYSQL_PASSWORD: ${DB_PASSWORD}
+    volumes:
+      - db_data:/var/lib/mysql
+      - ../CeCorrente/src/assets/db/cecorrente.sql:/docker-entrypoint-initdb.d/cecorrente.sql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-p$MYSQL_ROOT_PASSWORD"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+    networks:
+      - cecorrente_net
+
+  # ---- Applicazione PHP ----
+  app:
+    build:
+      context: ..
+      dockerfile: Docker/Dockerfile
+    container_name: cecorrente_app
+    ports:
+      - "8080:80"
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      DB_HOST: db
+      DB_NAME: ${DB_NAME}
+      DB_USER: ${DB_USER}
+      DB_PASSWORD: ${DB_PASSWORD}
+      PHP_VALUE: |
+        display_errors=0
+        display_startup_errors=0
+        error_reporting=22519
+    volumes:
+      - ../CeCorrente:/var/www/html/CeCorrente
+    networks:
+      - cecorrente_net
+
+volumes:
+  db_data:
+
+networks:
+  cecorrente_net:
+    driver: bridge

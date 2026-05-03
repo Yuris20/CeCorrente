@@ -1,0 +1,29 @@
+------------------------------------------------
+'                                              '
+'                                              ' 
+'             Yuri Sangiuliano                 '
+'             A13002305                        '
+'                                              '
+'                                              '
+'                                              '
+'                                              '
+-------------------------------------------------
+
+Per il corretto funzionamento del sito è importantissimo eseguire i seguenti passaggi: 
+1.	Avviare Xampp e MySql
+2.	Andare nella cartella C:\xampp\htdocs esportare il file zip ed inserire la cartella CeCorrente
+3.	Così da avere un percorso del genere C:\xampp\htdocs\CeCorrente
+4.	Sul vostro browser di fiducia andate qui http://localhost/CeCorrente/Istruzioni/
+5.	Cliccate su installadb.php 
+6.	Se tutto è andato correttamente andate su http://localhost/CeCorrente/
+7.	Adesso cliccate su src/
+8.	Fine.
+
+Si consiglia di accedere con le seguenti credenziali 
+Cliente :  CodiceCliente 1 Password : admin 
+Dipendente :  MatricolaD 1 Password : admin
+
+Per i test 
+Si consiglia di creare un account così da aver un numero cliente 
+Accedere con le credenziali Ufficio già scritte in precedenza creare un contratto successivamente il contatore effettuare una lettura, Creare una bolletta ed infine effettuare l’accesso con il cliente così da visualizzare la bolletta. 
+PS: in caso si clicchi una pagina e va in automatico all'index effettuare il login !
