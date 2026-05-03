@@ -1,33 +1,10 @@
-# ============================================================
-# docker-compose.yml - CeCorrente
-# Avvia PHP+Apache e MySQL insieme con un solo comando
-# ============================================================
+version: '3.8'
 
 services:
-
-  # ---- Applicazione PHP ----
-  app:
-    build: .
-    container_name: cecorrente_app
-    ports:
-      - "8080:80"          # Accedi su http://localhost:8080
-    depends_on:
-      db:
-        condition: service_healthy
-    environment:
-      DB_HOST: db
-      DB_NAME: ${DB_NAME}
-      DB_USER: ${DB_USER}
-      DB_PASSWORD: ${DB_PASSWORD}
-    networks:
-      - cecorrente_net
-
   # ---- Database MySQL ----
   db:
     image: mysql:8.0
     container_name: cecorrente_db
-    env_file:
-      - .env.database
     restart: always
     environment:
       MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
@@ -36,11 +13,29 @@ services:
       MYSQL_PASSWORD: ${DB_PASSWORD}
     volumes:
       - db_data:/var/lib/mysql
+      # Importazione automatica del database all'avvio
       - ./src/assets/db/cecorrente.sql:/docker-entrypoint-initdb.d/cecorrente.sql
     healthcheck:
       test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
-      timeout: 20s
+      timeout: 5s
       retries: 10
+    networks:
+      - cecorrente_net
+
+  # ---- Applicazione PHP ----
+  app:
+    build: .
+    container_name: cecorrente_app
+    ports:
+      - "8080:80"
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      DB_HOST: ${DB_HOST}
+      DB_NAME: ${DB_NAME}
+      DB_USER: ${DB_USER}
+      DB_PASSWORD: ${DB_PASSWORD}
     networks:
       - cecorrente_net
 
