@@ -1,0 +1,39 @@
+# ========================
+# SICUREZZA - Non caricare mai questi file su GitHub!
+# ========================
+.env
+.env.local
+.env.production
+
+# ========================
+# PHP / XAMPP
+# ========================
+/vendor/
+*.log
+*.cache
+
+# ========================
+# Node / NPM (usato da gulp)
+# ========================
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# ========================
+# PhpStorm (il tuo IDE)
+# ========================
+.idea/
+*.iml
+.DS_Store
+
+# ========================
+# OS
+# ========================
+Thumbs.db
+desktop.ini
+
+# ========================
+# Build artifacts
+# ========================
+/dist/
