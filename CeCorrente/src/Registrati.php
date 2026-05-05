@@ -27,16 +27,16 @@
 
                     <!-- Step Tabs -->
                     <ul class="nav nav-tabs nav-tabs-alt nav-fill" role="tablist">
-                        <li class="nav-item" role="presentation">
+                        <li class="nav-item">
                             <a class="nav-link active" role="tab" data-toggle="tab" href="#step1">1. Indirizzo</a>
                         </li>
-                        <li class="nav-item" role="presentation">
+                        <li class="nav-item">
                             <a class="nav-link" role="tab" data-toggle="tab" href="#step2">2. Anagrafica</a>
                         </li>
-                        <li class="nav-item" role="presentation">
+                        <li class="nav-item">
                             <a class="nav-link" role="tab" data-toggle="tab" href="#step3">3. Privato</a>
                         </li>
-                        <li class="nav-item" role="presentation">
+                        <li class="nav-item">
                             <a class="nav-link" role="tab" data-toggle="tab" href="#step4">4. Azienda</a>
                         </li>
                     </ul>
@@ -44,7 +44,6 @@
 
                     <!-- Form -->
                     <form class="js-wizard-validation-material-form" action="<?php echo $cb->assets_folder; ?>/php/Registrati.php" method="post">
-
                         <div class="block-content block-content-full tab-content" style="min-height: 260px;">
 
                             <!-- STEP 1 -->
@@ -55,7 +54,6 @@
                                         <label for="IndirizzoFiscale">Indirizzo Fiscale</label>
                                     </div>
                                 </div>
-
                                 <div class="form-group">
                                     <div class="form-material floating">
                                         <input class="form-control" id="CAP" type="text" name="cap" required>
@@ -71,12 +69,10 @@
                                     <label for="signup-email">Email-Pec</label>
                                     <input type="email" id="signup-email" class="form-control" name="email" placeholder="es: yurisan@cecorrente.kit" required>
                                 </div>
-
                                 <div class="form-group">
                                     <label for="Telefono">Telefono</label>
                                     <input type="tel" id="Telefono" class="js-masked-phone form-control js-masked-enabled" name="NumeroDiTel" placeholder="(999) 999-9999" required>
                                 </div>
-
                                 <div class="form-group">
                                     <label for="signup-password">Password</label>
                                     <input type="password" id="signup-password" class="form-control" name="password" placeholder="********" required>
@@ -92,7 +88,6 @@
                                         <label for="Nome">Nome</label>
                                     </div>
                                 </div>
-
                                 <div class="form-group">
                                     <div class="form-material floating">
                                         <input class="form-control" id="Cognome" type="text" name="Cognome">
@@ -110,14 +105,12 @@
                                         <label for="RagioneSociale">Ragione Sociale</label>
                                     </div>
                                 </div>
-
                                 <div class="form-group">
                                     <div class="form-material floating">
                                         <input class="form-control" id="NomeReferente" type="text" name="NomeReferente">
                                         <label for="NomeReferente">Nome Referente</label>
                                     </div>
                                 </div>
-
                                 <div class="form-group">
                                     <div class="form-material floating">
                                         <input class="form-control" id="CognomeRef" type="text" name="CognomeRef">
@@ -158,14 +151,11 @@
 
 <?php require_once 'inc/_global/views/page_end.php'; ?>
 <?php require_once 'inc/_global/views/footer_start.php'; ?>
-
 <?php $cb->get_js('js/plugins/jquery-validation/jquery.validate.min.js'); ?>
 <?php $cb->get_js('js/plugins/bootstrap-wizard/jquery.bootstrap.wizard.js'); ?>
 <?php $cb->get_js('js/plugins/jquery-validation/additional-methods.js'); ?>
 <?php $cb->get_js('js/plugins/jquery-auto-complete/jquery.auto-complete.min.js'); ?>
-
 <?php $cb->get_js('js/pages/op_auth_signup.min.js'); ?>
 <?php $cb->get_js('js/pages/be_forms_wizard.min.js'); ?>
 <?php $cb->get_js('js/pages/be_forms_plugins.min.js'); ?>
-
 <?php require_once 'inc/_global/views/footer_end.php'; ?>

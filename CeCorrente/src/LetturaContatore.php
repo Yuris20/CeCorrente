@@ -1,11 +1,11 @@
 <?php
-require 'assets/php/sessioni.php';
-require 'inc/_global/config.php';
-require 'inc/_global/views/head_start.php';
+require_once 'assets/php/sessioni.php';
+require_once 'inc/_global/config.php';
+require_once 'inc/_global/views/head_start.php';
 ?>
 
-<?php require 'inc/_global/views/head_end.php'; ?>
-<?php require 'inc/_global/views/page_start.php'; ?>
+<?php require_once 'inc/_global/views/head_end.php'; ?>
+<?php require_once 'inc/_global/views/page_start.php'; ?>
 
     <div class="bg-body-light hero-bubbles">
 
@@ -78,9 +78,9 @@ require 'inc/_global/views/head_start.php';
         </div>
     </div>
 
-<?php require 'inc/_global/views/page_end.php'; ?>
-<?php require 'inc/_global/views/footer_start.php'; ?>
+<?php require_once 'inc/_global/views/page_end.php'; ?>
+<?php require_once 'inc/_global/views/footer_start.php'; ?>
 
 <?php $cb->get_js('js/pages/op_installation.min.js'); ?>
 
-<?php require 'inc/_global/views/footer_end.php'; ?>
+<?php require_once 'inc/_global/views/footer_end.php'; ?>
