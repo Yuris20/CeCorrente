@@ -1,10 +1,11 @@
 <?php
 
 if (session_status() === PHP_SESSION_NONE) {
+    // Configurazione rigorosa dei parametri del cookie di sessione
     session_set_cookie_params([
-        'httponly' => true,
-        'secure'   => isset($_SERVER['HTTPS']),
-        'samesite' => 'Strict'
+        'httponly' => true,  // Impedisce l'accesso al cookie tramite script (Protezione XSS)
+        'secure'   => true,  // FIX: Obbliga il browser a inviare il cookie SOLO su HTTPS
+        'samesite' => 'Strict' // Impedisce l'invio del cookie in richieste provenienti da altri siti (Protezione CSRF)
     ]);
     session_start();
 }
@@ -51,9 +52,7 @@ if (password_verify($password, $passwordDb)) {
 }
 elseif ($password === $passwordDb) {
     // ✔️ password in chiaro → migrazione
-
     $nuovoHash = password_hash($password, PASSWORD_DEFAULT);
-
     $update = $connessione->prepare(
         "UPDATE dipendenti SET Password = ? WHERE MatricolaD = ?"
     );
@@ -70,7 +69,7 @@ else {
     exit();
 }
 
-// --- SESSIONE ---
+// --- RIGENERAZIONE ID SESSIONE (Sicurezza post-login) ---
 session_regenerate_id(true);
 
 $_SESSION['MatricolaD']  = $user['MatricolaD'];

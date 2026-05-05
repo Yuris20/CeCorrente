@@ -1,13 +1,19 @@
 <?php
-// --- SESSIONE SICURA ---
+// --- CONFIGURAZIONE SESSIONE SICURA ---
 if (session_status() === PHP_SESSION_NONE) {
     session_set_cookie_params([
-        'httponly' => true,
-        'secure'   => isset($_SERVER['HTTPS']), // evita problemi in locale
-        'samesite' => 'Strict'
+        'lifetime' => 0,
+        'path'     => '/',
+        'domain'   => '',
+        'secure'   => true,     // FIX: Il cookie viene inviato solo su connessioni HTTPS
+        'httponly' => true,     // Impedisce l'accesso al cookie tramite JavaScript (Anti-XSS)
+        'samesite' => 'Strict'  // Protegge contro attacchi CSRF
     ]);
     session_start();
 }
+
+// Rigenera l'ID sessione dopo il login per prevenire il Session Fixation
+session_regenerate_id(true);
 
 // --- CONNESSIONE DB ---
 require_once('ConnessioneDb.php');
