@@ -17,6 +17,3 @@ if ($connessione->connect_error) {
 }
 
 $connessione->set_charset('utf8mb4');
-?>
-
-

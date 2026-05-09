@@ -1,162 +1,216 @@
 <?php
+
 require_once 'assets/php/sessioni.php';
 require_once 'assets/php/ConnessioneDb.php';
 require_once 'inc/_global/config.php';
 require_once 'inc/backend/config.php';
+
 $cb->l_header_style = 'classic';
 
 require_once 'inc/_global/views/head_start.php';
 require_once 'inc/_global/views/head_end.php';
 require_once 'inc/_global/views/page_start.php';
+
+$CocC = $_GET['CC'] ?? '';
+
+$CostiQuotaFissa = $_GET['CostF'] ?? 0;
+$ComponenteEnergia = $_GET['ComponE'] ?? 0;
+$QuotaFissa = $_GET['QF'] ?? 0;
+$QuotaPotenza = $_GET['CQP'] ?? 0;
+$CostiQuotaVariabile = $_GET['CQV'] ?? 0;
+
+$DataEmissione = $_GET['DataE'] ?? '';
+$DataScadenzaPagamento = $_GET['DSP'] ?? '';
+
+if (empty($CocC)) {
+    die("Parametro CC non valido");
+}
+
 ?>
+
     <div class="content">
-        <!-- Progress -->
-        <h2 class="content-heading">
-            Bolletta ciente creata
-        </h2>
-        <!-- Addresses -->
+
+        <h2 class="content-heading">Bolletta cliente creata</h2>
+
         <h2 class="content-heading">Dati cliente</h2>
+
         <div class="row row-deck gutters-tiny">
-            <!-- Billing Address -->
+
             <div class="col-md-6">
                 <div class="block block-rounded">
                     <div class="block-header block-header-default">
                         <h3 class="block-title">Dati Società</h3>
                     </div>
+
                     <div class="block-content">
                         <div class="font-size-lg text-black mb-5">C'è Corrente</div>
+
                         <address>
                             Via Roma, n.9<br>
                             81031, Aversa (CE)<br>
-                            <i class="fa fa-envelope-o mr-5"></i> <a href="javascript:void(0)">bolletta@cecorrente.it</a>
+                            <a href="mailto:bolletta@cecorrente.it">bolletta@cecorrente.it</a>
                         </address>
                     </div>
                 </div>
             </div>
-            <!-- END Billing Address -->
 
-            <!-- Shipping Address -->
             <div class="col-md-6">
+
                 <div class="block block-rounded">
+
                     <div class="block-header block-header-default">
                         <h3 class="block-title">Indirizzo Fornitura</h3>
                     </div>
+
                     <div class="block-content">
 
                         <?php
-                        $CocC=$_GET['CC'];
+                        $sqlCliente = "
+SELECT
+    cliente.CodCliente,
+    cliente.IndirizzoFiscale,
+    comuni.CAP,
+    comuni.Comune,
+    comuni.Provincia,
+    cliente.Nome,
+    cliente.Cognome,
+    cliente.RagioneSociale
+FROM cliente
+INNER JOIN contratto ON cliente.CodCliente = contratto.CodCliente
+LEFT JOIN comuni ON cliente.CodComune = comuni.CodComune
+WHERE contratto.CodC = ?
+GROUP BY cliente.CodCliente
+";
 
-                        $sql = "SELECT cliente.CodCliente,cliente.IndirizzoFiscale,comuni.CAP,comuni.Comune,comuni.Provincia,cliente.Nome,cliente.Cognome,RagioneSociale FROM cliente INNER JOIN  comuni RIGHT JOIN contratto ON cliente.CodCliente=contratto.CodCliente WHERE contratto.CodC='$CocC' GROUP BY CodCliente";
+                        $stmtCliente = mysqli_prepare($connessione, $sqlCliente);
+                        mysqli_stmt_bind_param($stmtCliente, "s", $CocC);
+                        mysqli_stmt_execute($stmtCliente);
 
-                        $risultato = mysqli_query($connessione,$sql);
-                        while($riga=mysqli_fetch_array($risultato))
-                        {
-                            echo " 
-         
-           <div class='font-size-lg text-black mb-5'>
-           ".$riga['Nome']."
-                 ".$riga['Cognome']."</div>
-                 ".$riga['RagioneSociale']."<address>
-                 ".$riga['IndirizzoFiscale']."<br>
-                   ".$riga['CAP'].",
-                   ".$riga['Comune']." (
-                    ".$riga['Provincia'].")<br> 
-                    Italia
-                    </address>
-                 
-                
-          ";
-                        }
-                        ?>
+                        $risultatoCliente = mysqli_stmt_get_result($stmtCliente);
+
+                        while ($riga = mysqli_fetch_assoc($risultatoCliente)) {
+                            ?>
+
+                            <div class="font-size-lg text-black mb-5">
+                                <?= htmlspecialchars($riga['Nome'] ?? '') ?>
+                                <?= htmlspecialchars($riga['Cognome'] ?? '') ?>
+                            </div>
+
+                            <?= htmlspecialchars($riga['RagioneSociale'] ?? '') ?>
+
+                            <address>
+                                <?= htmlspecialchars($riga['IndirizzoFiscale'] ?? '') ?><br>
+                                <?= htmlspecialchars($riga['CAP'] ?? '') ?>,
+                                <?= htmlspecialchars($riga['Comune'] ?? '') ?>
+                                (<?= htmlspecialchars($riga['Provincia'] ?? '') ?>)
+                                <br>
+                                Italia
+                            </address>
+
+                        <?php } ?>
+
                     </div>
                 </div>
             </div>
-            <!-- END Shipping Address -->
-
         </div>
-        <!-- END Addresses -->
 
-        <!-- Products -->
         <?php
+        $sqlConsumi = "
+SELECT KWh
+FROM lettura
+LEFT JOIN contatore ON lettura.CodCont = contatore.CodCont
+WHERE contatore.CodC = ?
+ORDER BY DataLettura DESC
+LIMIT 1
+";
 
-        // Calcolo Della Bolletta
-        $CostiQuotaFissa=$_GET['CostF'];
-        $ComponenteEnergia=$_GET['ComponE'];
-        $QuotaFissa=$_GET['QF'];
-        $QuotaPotenza=$_GET['CQP'];
-        $CostiQuotaVariabile=$_GET['CQV'];
+        $stmtConsumi = mysqli_prepare($connessione, $sqlConsumi);
+        mysqli_stmt_bind_param($stmtConsumi, "s", $CocC);
+        mysqli_stmt_execute($stmtConsumi);
 
-        //Dati per Query Di Inserimento Bolletta
+        $risultatoConsumi = mysqli_stmt_get_result($stmtConsumi);
 
-        $DataEmissione=$_GET['DataE'];
-        $DataScadenzaPagamento=$_GET['DSP'];
+        $Consumi = 0;
 
-        $sql = "select KWh from lettura left join contatore ON lettura.CodCont=contatore.CodCont WHERE contatore.CodC='$CocC' ORDER BY DataLettura DESC;";
-
-        $risultato=mysqli_query($connessione,$sql);
-
-        if (mysqli_num_rows($risultato) == 0)
-        {
-            echo(mysqli_error($connessione));
+        if ($riga = mysqli_fetch_assoc($risultatoConsumi)) {
+            $Consumi = $riga['KWh'] ?? 0;
         }
-        else
-        {
-            $riga=mysqli_fetch_array($risultato);
-            {
-                $Consumi=$riga['KWh'];
-            }
-        }
-        $ImportoFinale=$CostiQuotaFissa+$ComponenteEnergia+$QuotaFissa+$QuotaPotenza+$CostiQuotaVariabile+$Consumi
+
+        $ImportoFinale =
+                $CostiQuotaFissa +
+                $ComponenteEnergia +
+                $QuotaFissa +
+                $QuotaPotenza +
+                $CostiQuotaVariabile +
+                $Consumi;
+
         ?>
 
         <h2 class="content-heading">Esempio Bolletta</h2>
+
         <div class="block block-rounded">
+
             <div class="block-content">
+
                 <div class="table-responsive">
+
                     <table class="table table-borderless table-striped">
+
                         <thead>
                         <tr>
                             <th>Data Emissione</th>
-                            <th class="text-center">Data Scadenza</th>
-                            <th class="text-right">Consumati Kw</th>
-                            <th class="text-right">Importo da pagare</th>
+                            <th class="text-center">Scadenza</th>
+                            <th class="text-center">Consumi KW</th>
+                            <th class="text-right">Importo</th>
                         </tr>
                         </thead>
+
                         <tbody>
                         <tr>
-                            <td>
-                                <?php echo($DataEmissione) ?>
-                            </td>
-                            <td class="text-center"><?php echo($DataScadenzaPagamento)?></td>
-                            <td class="text-center"><?php echo($Consumi) ?></td>
-                            <td class="text-right"><?php echo($ImportoFinale) ?></td>
+                            <td><?= htmlspecialchars($DataEmissione ?? '') ?></td>
+                            <td class="text-center"><?= htmlspecialchars($DataScadenzaPagamento ?? '') ?></td>
+                            <td class="text-center"><?= htmlspecialchars($Consumi ?? 0) ?></td>
+                            <td class="text-right">€ <?= htmlspecialchars(number_format($ImportoFinale, 2)) ?></td>
                         </tr>
                         </tbody>
+
                     </table>
+
                 </div>
+
             </div>
+
         </div>
-        <!-- END Products -->
 
         <?php
 
-        $sql = "INSERT INTO bolletta (DataEmissione,DataScadenza,KWConsumati,Importo,CodC) VALUES ('$DataEmissione','$DataScadenzaPagamento','$Consumi','$ImportoFinale','$CocC')";
+        $sqlInsert = "
+INSERT INTO bolletta
+(DataEmissione, DataScadenza, KWConsumati, Importo, CodC)
+VALUES (?, ?, ?, ?, ?)
+";
 
-        $risultato=mysqli_query($connessione,$sql);
+        $stmtInsert = mysqli_prepare($connessione, $sqlInsert);
 
-        if(!$risultato)
-        {
-            echo("Bolletta non creata perchè ".mysqli_error($connessione));
-        }
-        else
-        {
-            echo("Bolletta creata con successo");
-        }
+        mysqli_stmt_bind_param(
+                $stmtInsert,
+                "ssdds",
+                $DataEmissione,
+                $DataScadenzaPagamento,
+                $Consumi,
+                $ImportoFinale,
+                $CocC
+        );
+
+        $ok = mysqli_stmt_execute($stmtInsert);
 
         ?>
 
+        <div class="alert alert-info">
+            <?= $ok ? "Bolletta creata con successo" : "Errore creazione bolletta" ?>
+        </div>
+
     </div>
-    <!-- END Page Content -->
 
 <?php require_once 'inc/_global/views/page_end.php'; ?>
 <?php require_once 'inc/_global/views/footer_start.php'; ?>
