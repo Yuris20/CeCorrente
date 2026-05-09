@@ -17,9 +17,6 @@ if ($connessione->connect_error) {
 }
 
 $connessione->set_charset('utf8mb4');
-
-GITHUB_TOKEN="ghp_FAKEFAKEFAKEFAKEFAKEFAKEFAKE1234"
-
 ?>
 
 
