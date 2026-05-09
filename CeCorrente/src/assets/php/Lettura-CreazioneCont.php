@@ -4,28 +4,16 @@ include('ConnessioneDb.php');
 
 session_start();
 
-ini_set('display_errors', 1);
-error_reporting(E_ALL);
-
-// --------------------
-// INPUT
-// --------------------
 $azione = $_POST['azione'] ?? '';
 
-$MC          = $_POST['ModCont'] ?? null;
-$CCR         = $_POST['CodiceContr'] ?? null;
-$CodiceCont  = $_POST['CodC'] ?? null;
-$KWM         = $_POST['KWC'] ?? null;
+$MC         = $_POST['ModCont'] ?? null;
+$CCR        = $_POST['CodiceContr'] ?? null;
+$CodiceCont = $_POST['CodC'] ?? null;
+$KWM        = $_POST['KWC'] ?? null;
 
 $MatricolaD = $_SESSION['MatricolaD'] ?? null;
 
-// 👉 FIX IMPORTANTE: campo mancante nel DB
 $Tipo = 'manuale';
-
-
-// --------------------
-// RISPOSTA
-// --------------------
 function risposta($msg) {
     echo "
     <html>
@@ -40,19 +28,11 @@ function risposta($msg) {
     ";
     exit();
 }
-
-
-// --------------------
-// CONTROLLO AZIONE
-// --------------------
-if ($azione === '') {
+if (empty($azione)) {
     risposta("❌ Nessuna azione selezionata");
 }
 
-
-// --------------------
-// INSTALLAZIONE CONTATORE
-// --------------------
+$stmt = null;
 if ($azione === 'installazione') {
 
     if (!$MC || !$CCR) {
@@ -65,16 +45,11 @@ if ($azione === 'installazione') {
     );
 
     if (!$stmt) {
-        risposta("❌ Errore database");
+        risposta("❌ Errore sistema");
     }
 
     $stmt->bind_param('sss', $MC, $CCR, $Tipo);
 }
-
-
-// --------------------
-// LETTURA CONTATORE
-// --------------------
 elseif ($azione === 'lettura') {
 
     if (!$CodiceCont || !$KWM || !$MatricolaD) {
@@ -89,24 +64,15 @@ elseif ($azione === 'lettura') {
     );
 
     if (!$stmt) {
-        risposta("❌ Errore database");
+        risposta("❌ Errore sistema");
     }
 
     $stmt->bind_param('dsss', $KWM_float, $MatricolaD, $CodiceCont, $Tipo);
 }
-
-
-// --------------------
-// AZIONE NON VALIDA
-// --------------------
 else {
     risposta("❌ Azione non valida");
 }
 
-
-// --------------------
-// ESECUZIONE
-// --------------------
 if (!$stmt->execute()) {
     risposta("❌ Errore durante inserimento");
 }
@@ -114,5 +80,3 @@ if (!$stmt->execute()) {
 $stmt->close();
 
 risposta("✔ Operazione effettuata con successo");
-
-?>

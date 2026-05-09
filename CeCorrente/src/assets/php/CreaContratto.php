@@ -1,56 +1,55 @@
 <?php
-include('ConnessioneDb.php'); // Mi richiamo la connessione
+include('ConnessioneDb.php');
 
-// acquisizione dati dal form HTML
-$CodiceCliente = $_GET['CodiceC'];
+$CodiceCliente = $_GET['CodiceC'] ?? '';
+$DataOff = $_GET['DataOfferta'] ?? '';
+$DiF = $_GET['DataInizioFornitura'] ?? '';
+$KWM = $_GET['KWMax'] ?? '';
+$IndirizzoF = $_GET['IndirizzoFornitura'] ?? '';
+$Cap = $_GET['CAP'] ?? '';
 
-$DataOff = $_GET['DataOfferta'];
-$DiF = $_GET['DataInizioFornitura'];
-$KWM = $_GET['KWMax'];
-$IndirizzoF= $_GET['IndirizzoFornitura'];
+$sql = "SELECT CodComune FROM comuni WHERE CAP = ? LIMIT 1";
 
-$Cap = $_GET['CAP'];
+$stmt = mysqli_prepare($connessione, $sql);
+mysqli_stmt_bind_param($stmt, "s", $Cap);
+mysqli_stmt_execute($stmt);
 
-$IndirizF= $_GET['IndirizzoFornitura'];
+$risultato = mysqli_stmt_get_result($stmt);
 
-
-// Recupero del codice comune 
-
-$sql = "SELECT CodComune FROM comuni WHERE CAP = '$Cap' LIMIT 1";
-
-$risultato=mysqli_query($connessione,$sql);
-
-if (mysqli_num_rows($risultato) == 0)
-{
-                 echo(mysqli_error($connessione));
-                echo(no);
-}
-else
-{
-    $riga=mysqli_fetch_array($risultato);
-    {
-                
-                $CodComune=$riga['CodComune'];
-    }
+if ($row = mysqli_fetch_assoc($risultato)) {
+    $CodComune = $row['CodComune'];
+} else {
+    die("CAP non valido");
 }
 
 
-$sql = "INSERT INTO contratto (DataStipula,DataInizioFornitur,KWMax,IndirizzoFornitura,CodComune,CodCliente) VALUES ('$DataOff','$DiF','$KWM', '$IndirizzoF','$CodComune','$CodiceCliente')";
+$sql = "
+INSERT INTO contratto
+(DataStipula, DataInizioFornitur, KWMax, IndirizzoFornitura, CodComune, CodCliente)
+VALUES (?, ?, ?, ?, ?, ?)
+";
 
-$risultato=mysqli_query($connessione,$sql);
+$stmt = mysqli_prepare($connessione, $sql);
 
+mysqli_stmt_bind_param(
+    $stmt,
+    "ssssss",
+    $DataOff,
+    $DiF,
+    $KWM,
+    $IndirizzoF,
+    $CodComune,
+    $CodiceCliente
+);
 
-if(!$risultato) 
-{
-    echo("<br>");
-	echo("errore nella query dati non inseriti");
-     echo(mysqli_error($connessione));
-	exit();
-}
-else
-{
-    echo("Contratto registrato con successo");
-    echo("<br>");
-    echo($link ='<a id="backlink" href="'. $_SERVER['HTTP_REFERER'] . '">clicca qui per tornare indietro');
+$risultato = mysqli_stmt_execute($stmt);
+
+if (!$risultato) {
+    echo "<br>errore nella query dati non inseriti";
+    echo mysqli_stmt_error($stmt);
+    exit();
+} else {
+    echo "Contratto registrato con successo<br>";
+    echo '<a href="' . ($_SERVER['HTTP_REFERER'] ?? 'index.php') . '">clicca qui per tornare indietro</a>';
 }
 ?>

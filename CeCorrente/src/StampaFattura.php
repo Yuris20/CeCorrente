@@ -4,27 +4,40 @@
 <?php require_once 'inc/_global/views/head_start.php'; ?>
 <?php require_once 'inc/_global/views/head_end.php'; ?>
 <?php require_once 'inc/_global/views/page_start.php'; ?>
-    <!-- Page Content -->
+
     <div class="content">
-        <!-- Invoice -->
-        <h2 class="content-heading d-print-none">
-            Bolletta
-        </h2>
+
+        <!-- PAGE HEADER -->
+        <h2 class="content-heading d-print-none">Bolletta</h2>
+
         <div class="block">
+
             <div class="block-header block-header-default">
                 <h3 class="block-title">Codice Bolletta</h3>
+
                 <div class="block-options">
-                    <!-- Print Page functionality is initialized in Helpers.print() -->
-                    <button type="button" class="btn-block-option" onclick="Codebase.helpers('print-page');">
+
+                    <button type="button"
+                            class="btn-block-option"
+                            onclick="Codebase.helpers('print-page');">
                         <i class="si si-printer"></i> Stampa Bolletta
                     </button>
-                    <button type="button" class="btn-block-option" data-toggle="block-option" data-action="fullscreen_toggle"></button>
+
+                    <button type="button"
+                            class="btn-block-option"
+                            data-toggle="block-option"
+                            data-action="fullscreen_toggle">
+                    </button>
+
                 </div>
+
             </div>
+
             <div class="block-content">
-                <!-- Invoice Info -->
+
                 <div class="row my-20">
-                    <!-- Company Info -->
+
+                    <!-- COMPANY -->
                     <div class="col-6">
                         <p class="h3">C'è Corrente</p>
                         <address>
@@ -33,98 +46,157 @@
                             bolletta@cecorrente.it
                         </address>
                     </div>
-                    <!-- END Company Info -->
 
-                    <!-- Client Info -->
+                    <!-- CLIENT -->
                     <div class="col-6 text-right">
+
                         <?php
-                        $sql = "SELECT cliente.CodCliente,cliente.IndirizzoFiscale,comuni.CAP,comuni.Comune,comuni.Provincia,cliente.Nome,cliente.Cognome,RagioneSociale FROM cliente INNER JOIN comuni ON CodCliente= '$CodiceCliente' GROUP BY CodCliente;";
 
-                        $risultato = mysqli_query($connessione,$sql);
-                        while($riga=mysqli_fetch_array($risultato))
-                        {
-                            echo " 
-         <address>
-           <p class='h3'>Cliente N°".$riga['CodCliente']."</p>
-           ".$riga['Nome']."
-                 ".$riga['Cognome']."
-                 ".$riga['RagioneSociale']."<br>
-                 ".$riga['IndirizzoFiscale']."<br>
-                   ".$riga['CAP'].",
-                   ".$riga['Comune']." (
-                    ".$riga['Provincia'].")<br>
-                 
-                
-           </address>";
-                        }
-                        ?>
+                        $CodiceCliente = $_GET['CodiceCliente'] ?? '';
+
+                        $sqlCliente = "
+SELECT
+    cliente.CodCliente,
+    cliente.IndirizzoFiscale,
+    comuni.CAP,
+    comuni.Comune,
+    comuni.Provincia,
+    cliente.Nome,
+    cliente.Cognome,
+    cliente.RagioneSociale
+FROM cliente
+INNER JOIN comuni ON cliente.CodComune = comuni.CodComune
+WHERE cliente.CodCliente = ?
+";
+
+                        $stmt = mysqli_prepare($connessione, $sqlCliente);
+                        mysqli_stmt_bind_param($stmt, "s", $CodiceCliente);
+                        mysqli_stmt_execute($stmt);
+
+                        $risultato = mysqli_stmt_get_result($stmt);
+
+                        while ($riga = mysqli_fetch_assoc($risultato)) {
+                            ?>
+
+                            <address>
+                                <p class="h3">
+                                    Cliente N° <?= htmlspecialchars($riga['CodCliente'] ?? '') ?>
+                                </p>
+
+                                <?= htmlspecialchars($riga['Nome'] ?? '') ?>
+                                <?= htmlspecialchars($riga['Cognome'] ?? '') ?>
+                                <?= htmlspecialchars($riga['RagioneSociale'] ?? '') ?><br>
+
+                                <?= htmlspecialchars($riga['IndirizzoFiscale'] ?? '') ?><br>
+
+                                <?= htmlspecialchars($riga['CAP'] ?? '') ?>,
+                                <?= htmlspecialchars($riga['Comune'] ?? '') ?>
+                                (<?= htmlspecialchars($riga['Provincia'] ?? '') ?>)
+                            </address>
+
+                        <?php } ?>
+
                     </div>
-                    <!-- END Client Info -->
-                </div>
-                <!-- END Invoice Info -->
 
-                <!-- Table -->
+                </div>
+
+                <!-- TABLE -->
+
                 <div class="table-responsive push">
+
                     <table class="table table-bordered table-hover">
+
                         <thead>
                         <tr>
-                            <th class="text-center" style="width: 60px;">Codice Bolletta</th>
-                            <th class="text-right" style="width: 120px;">Data Emissione</th>
-                            <th class="text-right" style="width: 120px;">Data Scadenza</th>
-                            <th class="text-right" style="width: 120px;">Kw Consumati</th>
-                            <th class="text-right" style="width: 120px;">Importo</th>
+                            <th class="text-center">Codice Bolletta</th>
+                            <th class="text-right">Data Emissione</th>
+                            <th class="text-right">Data Scadenza</th>
+                            <th class="text-right">Kw Consumati</th>
+                            <th class="text-right">Importo</th>
                         </tr>
                         </thead>
+
                         <tbody>
+
                         <?php
-                        $id=$_GET['id'];
-                        $sql = "SELECT * FROM bolletta WHERE CodiceBolletta='$id'";
 
-                        $risultato = mysqli_query($connessione,$sql);
-                        while($riga=mysqli_fetch_array($risultato))
-                        {
-                            echo " 
-         <tr>
-                <td class='text-center'>".$riga['CodiceBolletta']."</td>
-                <td class='text-right'>".$riga['DataEmissione']."</td>
-                 <td class='text-right'>".$riga['DataScadenza']."</td>
-                <td class='text-right'>".$riga['KWConsumati']."</td> 
-                 <td class='text-right'>".$riga['Importo']."</td>
-                
-          </tr>";
-                            $Importo=$riga['Importo'];
-                        }
-                        $sql = "SELECT importoSaldato FROM pagamento WHERE CodiceBolletta ='$id'";
+                        $id = $_GET['id'] ?? '';
 
-                        $risultato=mysqli_query($connessione,$sql);
-                        $riga=mysqli_fetch_array($risultato);
-                        {
-                            ($ImportoSaldato= $riga['importoSaldato']);
-                        }
+                        $sql = "
+SELECT *
+FROM bolletta
+WHERE CodiceBolletta = ?
+";
 
-                        $tot=$ImportoSaldato-$Importo;
+                        $stmt = mysqli_prepare($connessione, $sql);
+                        mysqli_stmt_bind_param($stmt, "s", $id);
+                        mysqli_stmt_execute($stmt);
+
+                        $risultato = mysqli_stmt_get_result($stmt);
+
+                        $Importo = 0;
+
+                        while ($riga = mysqli_fetch_assoc($risultato)) {
+
+                            $Importo = $riga['Importo'] ?? 0;
+
+                            ?>
+
+                            <tr>
+                                <td class="text-center"><?= htmlspecialchars($riga['CodiceBolletta'] ?? '') ?></td>
+                                <td class="text-right"><?= htmlspecialchars($riga['DataEmissione'] ?? '') ?></td>
+                                <td class="text-right"><?= htmlspecialchars($riga['DataScadenza'] ?? '') ?></td>
+                                <td class="text-right"><?= htmlspecialchars($riga['KWConsumati'] ?? '') ?></td>
+                                <td class="text-right">€ <?= htmlspecialchars($riga['Importo'] ?? '') ?></td>
+                            </tr>
+
+                        <?php } ?>
+
+                        <?php
+
+                        $sql = "
+SELECT importoSaldato
+FROM pagamento
+WHERE CodiceBolletta = ?
+";
+
+                        $stmt = mysqli_prepare($connessione, $sql);
+                        mysqli_stmt_bind_param($stmt, "s", $id);
+                        mysqli_stmt_execute($stmt);
+
+                        $ris = mysqli_stmt_get_result($stmt);
+
+                        $row = mysqli_fetch_assoc($ris);
+
+                        $ImportoSaldato = $row['importoSaldato'] ?? 0;
+
+                        $tot = $ImportoSaldato - $Importo;
+
                         ?>
+
                         <tr>
                             <td colspan="4" class="font-w600 text-right">Pagato</td>
-                            <td class="text-right"><?php echo($ImportoSaldato)?></td>
+                            <td class="text-right">€ <?= htmlspecialchars($ImportoSaldato) ?></td>
                         </tr>
+
                         <tr class="table-warning">
                             <td colspan="4" class="font-w700 text-uppercase text-right">Totale da pagare</td>
-                            <td class="font-w700 text-right">€<?php echo($tot)?></td>
+                            <td class="font-w700 text-right">€ <?= htmlspecialchars($tot) ?></td>
                         </tr>
-                        </tbody>
-                    </table>
-                </div>
-                <!-- END Table -->
 
-                <!-- Footer -->
+                        </tbody>
+
+                    </table>
+
+                </div>
+
                 <p class="text-muted text-center">Grazie per averci scelto!</p>
-                <!-- END Footer -->
+
             </div>
+
         </div>
-        <!-- END Invoice -->
+
     </div>
-    <!-- END Page Content -->
 
 <?php require_once 'inc/_global/views/page_end.php'; ?>
 <?php require_once 'inc/_global/views/footer_start.php'; ?>

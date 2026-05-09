@@ -1,105 +1,108 @@
 <?php
-include('ConnessioneDb.php'); // Mi richiamo la connessione
+include('ConnessioneDb.php');
 
-// acquisizione dati dal form HTML Obbligatori 
-$IndirizzoFiscale = $_POST['IndirizzoFiscale'];
-$cap = $_POST['cap'];
-$emailPec = $_POST['email'];
-$NumeroDiTel = $_POST['NumeroDiTel'];
-$password = $_POST['password'];
-//Opzionali Privato
-$Nome = $_POST['Nome'];
-$Cognome = $_POST['Cognome'];
-//Opzionali Azienda 
+$IndirizzoFiscale = $_POST['IndirizzoFiscale'] ?? '';
+$cap = $_POST['cap'] ?? '';
+$emailPec = $_POST['email'] ?? '';
+$NumeroDiTel = $_POST['NumeroDiTel'] ?? '';
+$password = $_POST['password'] ?? '';
 
-$RagioneSociale=$_POST['RagioneSociale'];
-$NomeReferente= $_POST['NomeReferente'];
-$CognomeRef = $_POST['CognomeRef'];
+$Nome = $_POST['Nome'] ?? '';
+$Cognome = $_POST['Cognome'] ?? '';
 
-// Recupero del codice comune 
+$RagioneSociale = $_POST['RagioneSociale'] ?? '';
+$NomeReferente = $_POST['NomeReferente'] ?? '';
+$CognomeRef = $_POST['CognomeRef'] ?? '';
 
-$sql = "SELECT CodComune FROM comuni WHERE CAP = '$cap' LIMIT 1";
+$sql = "SELECT CodComune FROM comuni WHERE CAP = ? LIMIT 1";
 
-$risultato=mysqli_query($connessione,$sql);
+$stmt = mysqli_prepare($connessione, $sql);
+mysqli_stmt_bind_param($stmt, "s", $cap);
+mysqli_stmt_execute($stmt);
 
-if (mysqli_num_rows($risultato) == 0)
-{
-                 echo(mysqli_error($connessione));
-                echo(no);
-}
-else
-{
-    $riga=mysqli_fetch_array($risultato);
-    {
-                
-                $CodComune=$riga['CodComune'];
-    }
-}
-// verifica tipo 
-echo("Sono il nome".$Nome);
-echo("<br>");
-echo("Sono la ragione".$RagioneSociale);
-echo("<br>");
-if($Nome=="");
-   { 
-   echo("Il nome è vuoto quindi");
-    echo("<br>");
-       $tipo='Azienda'; 
-       
-       $sql = "INSERT INTO cliente (IndirizzoFiscale,Telefono,NomeReferente,RagioneSociale,CognomeReferente,EmailPec,Tipo,Password, CodComune) VALUES ('$IndirizzoFiscale','$NumeroDiTel','$NomeReferente','$RagioneSociale','$CognomeRef','$emailPec','$tipo','$password','$CodComune')";
+$risultato = mysqli_stmt_get_result($stmt);
 
-   }
-
-if($RagioneSociale=="")
-   {
-    echo("La ragione Sociale e vuota quindi");
-    echo("<br>");
-    $tipo="Privato";
-    $sql = "INSERT INTO cliente (IndirizzoFiscale,Telefono,Cognome,EmailPec,Tipo,Nome,Password, CodComune) VALUES ('$IndirizzoFiscale','$NumeroDiTel','$Cognome','$emailPec','$tipo','$Nome','$password','$CodComune')";
-
-   }
-   
-
-$risultato=mysqli_query($connessione,$sql);
-
-if(!$risultato) 
-{
-    echo("<br>");
-	echo("errore nella query dati non inseriti");
-    echo(mysqli_error($connessione));
-    
-    echo($emailPec);
-
-    
-}
-else
-{
-    echo("Cliente aggiunto con successo");
-    echo("<br>");
+if ($row = mysqli_fetch_assoc($risultato)) {
+    $CodComune = $row['CodComune'];
+} else {
+    die("CAP non valido");
 }
 
+if ($Nome == "") {
 
-$sql = "SELECT CodCliente FROM cliente WHERE EmailPec = '$emailPec' LIMIT 1";
+    $tipo = 'Azienda';
 
-$risultato=mysqli_query($connessione,$sql);
+    $sql = "
+        INSERT INTO cliente
+        (IndirizzoFiscale, Telefono, NomeReferente, RagioneSociale, CognomeReferente, EmailPec, Tipo, Password, CodComune)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+    ";
 
-if (mysqli_num_rows($risultato) == 0)
-{
-                 echo(mysqli_error($connessione));
-                echo(no);
+    $stmt = mysqli_prepare($connessione, $sql);
+
+    mysqli_stmt_bind_param(
+        $stmt,
+        "sssssssss",
+        $IndirizzoFiscale,
+        $NumeroDiTel,
+        $NomeReferente,
+        $RagioneSociale,
+        $CognomeRef,
+        $emailPec,
+        $tipo,
+        $password,
+        $CodComune
+    );
+
 }
-else
-{
-    $riga=mysqli_fetch_array($risultato);
-    {
-                
-                $CodCliente=$riga['CodCliente'];
-    }
+
+if ($RagioneSociale == "") {
+
+    $tipo = "Privato";
+
+    $sql = "
+        INSERT INTO cliente
+        (IndirizzoFiscale, Telefono, Cognome, EmailPec, Tipo, Nome, Password, CodComune)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+    ";
+
+    $stmt = mysqli_prepare($connessione, $sql);
+
+    mysqli_stmt_bind_param(
+        $stmt,
+        "ssssssss",
+        $IndirizzoFiscale,
+        $NumeroDiTel,
+        $Cognome,
+        $emailPec,
+        $tipo,
+        $Nome,
+        $password,
+        $CodComune
+    );
+
 }
 
-echo("Ecco il tuo codice Cliente ".$CodCliente);
+$risultato = mysqli_stmt_execute($stmt);
 
- echo($link ='<a id="backlink" href="../../index.php">clicca qui per tornare indietro');
+if (!$risultato) {
+    die("Errore inserimento: " . mysqli_stmt_error($stmt));
+}
 
+$sql = "SELECT CodCliente FROM cliente WHERE EmailPec = ? LIMIT 1";
 
+$stmt = mysqli_prepare($connessione, $sql);
+mysqli_stmt_bind_param($stmt, "s", $emailPec);
+mysqli_stmt_execute($stmt);
+
+$risultato = mysqli_stmt_get_result($stmt);
+
+$row = mysqli_fetch_assoc($risultato);
+
+$CodCliente = $row['CodCliente'] ?? null;
+
+echo "Cliente aggiunto con successo<br>";
+echo "Codice Cliente: " . $CodCliente;
+
+echo '<br><a href="../../index.php">Clicca qui per tornare indietro</a>';
 ?>
