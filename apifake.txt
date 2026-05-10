@@ -1,8 +1,0 @@
-# Esempio di chiave AWS (finta, ma con formato corretto)
-AWS_SECRET_ACCESS_KEY=wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY
-
-# Esempio di chiave Google API (finta)
-GOOGLE_API_KEY=AIzaSyA-1234567890abcdefghij1234567890
-
-# Esempio di connessione Database
-DATABASE_URL=postgres://admin:password_segreta_123@localhost:5432/mydb
