@@ -2,8 +2,6 @@
 # SICUREZZA - Non caricare mai questi file su GitHub!
 # ========================
 .env
-.env.local
-.env.production
 
 # ========================
 # PHP / XAMPP

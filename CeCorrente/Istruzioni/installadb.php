@@ -1,56 +1,55 @@
 <?php
-$host="127.0.0.1";
-$user="root";
-$password="";
+$host = "127.0.0.1";
+$user = "root";
+$password = "";
+
 $connessione = mysqli_connect($host, $user, $password);
-if(!$connessione)
-{
-    echo("STEP 1: Connessione al server  Mysql Fallita");
-    echo("<br>");
-    exit();
-}
-$provaDb=mysqli_select_db($connessione,"my_cecorrente");
-if(!$provaDb)
-{
-    echo("STEP 1: Connesione al database C e Corrente fallita");
-	 echo("<br>");
-    
-	$query= 'CREATE DATABASE my_cecorrente';
-    $risultato= mysqli_query($connessione,$query);
-	if(!$risultato)
-	{
-		 echo("STEP 2: Database non creato");
-         echo("<br>");
-	}
-	else
-	{
-		echo("STEP 2: Database creato con successo");
-         echo("<br>");
-		$Db=mysqli_select_db($connessione,'my_cecorrente');
-	}   
+
+if (!$connessione) {
+    // FIX: Messaggio generico all'utente e log tecnico sul server
+    error_log("Fallimento connessione MySQL: " . mysqli_connect_error());
+    die("Errore critico di sistema. L'installazione non può proseguire.");
 }
 
-// Variabile temporanea, utilizzata per memorizzare la query corrente
-$templine = '';
-// Leggi all'interno del file
-$lines = file('cecorrente.sql');
-// Passa attraverso ogni linea
-foreach ($lines as $line) 
-{
-// Saltalo se si tratta di un commento
-    if (substr($line, 0, 2) == '--' || $line == '')
-        continue;
+$db_name = "my_cecorrente";
+$provaDb = mysqli_select_db($connessione, $db_name);
 
-// Aggiungi questa linea al segmento corrente
-    $templine .= $line;
-// Se ha un punto e virgola alla fine, è la fine della query
-    if (substr(trim($line), -1, 1) == ';') {
-        // Perform the query
-        mysqli_query($connessione,$templine) or print('Errore durante l esecuzione della query \'<strong>' . $templine . '\': ' . mysqli_error($connessione) . '<br /><br />');
-       // Ripristina la variabile temporanea vuota
-        $templine = '';
+if (!$provaDb) {
+    $query = 'CREATE DATABASE ' . $db_name;
+    $risultato = mysqli_query($connessione, $query);
+
+    if (!$risultato) {
+        // FIX: Nessuna stampa della query fallita a video
+        error_log("Impossibile creare il database: " . mysqli_error($connessione));
+        die("Si è verificato un errore durante la configurazione iniziale.");
+    } else {
+        mysqli_select_db($connessione, $db_name);
     }
 }
-echo ("Ultimo Step:Database importato con successo");
-echo("<br>");
+
+$templine = '';
+if (file_exists('cecorrente.sql')) {
+    $lines = file('cecorrente.sql');
+    foreach ($lines as $line) {
+        if (substr($line, 0, 2) == '--' || $line == '') {
+            continue;
+        }
+
+        $templine .= $line;
+        if (substr(trim($line), -1, 1) == ';') {
+            // FIX: Esecuzione silenziosa della query
+            $exec_query = mysqli_query($connessione, $templine);
+
+            if (!$exec_query) {
+                // L'errore viene loggato internamente per il debugging
+                error_log("Errore importazione query: " . mysqli_error($connessione));
+                die("Errore durante l'importazione dei dati. Consultare i log di sistema.");
+            }
+            $templine = '';
+        }
+    }
+    echo "Configurazione completata correttamente.";
+} else {
+    die("Risorsa di installazione non trovata.");
+}
 ?>
